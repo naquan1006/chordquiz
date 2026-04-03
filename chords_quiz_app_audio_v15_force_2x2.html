@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Chords quiz</title>
+  <style>
+    :root{
+      --bg1:#f8f1e6;
+      --bg2:#efe1cc;
+      --card:rgba(255,253,249,0.88);
+      --card-solid:#fffdf9;
+      --ink:#1f1d19;
+      --muted:#70695f;
+      --line:#ddd2c2;
+      --good-bg:#e9f7ef;
+      --bad-bg:#faecea;
+      --btn:#f6efe3;
+      --btn-hover:#eadfcb;
+      --shadow:0 12px 30px rgba(63,38,8,.10);
+      --shadow-soft:0 6px 18px rgba(63,38,8,.08);
+      --radius:22px;
+      --accent:#1f1d19;
+      --accent-2:#d94b43;
+      --pill:#f5ecde;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ margin:0; padding:0; }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.35), transparent 28%),
+        linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+      min-height:100vh;
+    }
+    .app{
+      max-width:760px;
+      margin:0 auto;
+      padding:max(14px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
+    }
+    .hero{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .title-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .logo{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(180deg,#27231e 0%, #0f0e0c 100%);
+      color:#fff;
+      box-shadow:var(--shadow-soft);
+      font-size:20px;
+    }
+    h1{
+      font-size: clamp(24px, 6vw, 34px);
+      line-height:1.08;
+      margin:0;
+      letter-spacing:-0.02em;
+    }
+    .score-mini{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .score-pill{
+      background:rgba(255,253,249,0.78);
+      border:1px solid rgba(221,210,194,.95);
+      border-radius:14px;
+      padding:8px 10px;
+      min-width:56px;
+      text-align:center;
+      box-shadow:var(--shadow-soft);
+      backdrop-filter:blur(8px);
+    }
+    .score-pill .v{
+      font-size:15px;
+      font-weight:800;
+      line-height:1;
+      margin-bottom:3px;
+    }
+    .score-pill .k{
+      font-size:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .score-wide{
+      min-width:88px;
+      padding:8px 12px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid rgba(221,210,194,.95);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+    .quiz{ padding:12px; }
+
+    .topbar{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .difficulty{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+    .diff-btn{
+      appearance:none;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:10px 8px;
+      background:#f8f2e8;
+      font-size:15px;
+      font-weight:800;
+      color:#53483a;
+      box-shadow:0 2px 8px rgba(0,0,0,.03);
+      transition:.16s ease;
+    }
+    .diff-btn.active{
+      background:linear-gradient(180deg,#2b2823 0%, #171613 100%);
+      color:#fff;
+      border-color:#171613;
+      transform:translateY(-1px);
+      box-shadow:0 8px 18px rgba(0,0,0,.14);
+    }
+    .play-btn{
+      appearance:none;
+      border:none;
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(180deg,#2b2823 0%, #171613 100%);
+      color:#fff;
+      box-shadow:0 8px 18px rgba(0,0,0,.14);
+      font-size:18px;
+    }
+
+    .keyboard-shell{
+      background:linear-gradient(180deg,#f7f7f7 0%, #ececec 100%);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px;
+      overflow:hidden;
+      margin-bottom:12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    svg{
+      display:block;
+      width:100%;
+      height:auto;
+      border-radius:14px;
+      background:#efefef;
+    }
+
+    .answers{
+      display:grid;
+      gap:8px;
+    }
+    .answers.four{
+      grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    }
+    .answers.six{
+      grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+    }
+    .answer-btn{
+      appearance:none;
+      width:100%;
+      text-align:left;
+      border:1px solid rgba(221,210,194,.95);
+      background:linear-gradient(180deg,#f8f2e7 0%, #f3eadc 100%);
+      color:var(--ink);
+      border-radius:18px;
+      padding:10px 12px;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.2;
+      box-shadow:var(--shadow-soft);
+      transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
+      touch-action:manipulation;
+    }
+    .answer-btn:active:not(:disabled){
+      transform:scale(.992);
+      background:var(--btn-hover);
+    }
+    .answer-btn:disabled{ opacity:1; }
+    .answer-btn.correct{
+      border-color:rgba(31,157,85,.35);
+      background:var(--good-bg);
+      color:#145d35;
+    }
+    .answer-btn.wrong{
+      border-color:rgba(192,57,43,.35);
+      background:var(--bad-bg);
+      color:#7a2117;
+    }
+
+    .feedback{
+      display:none !important;
+      margin-top:14px;
+      padding:14px;
+      border-radius:18px;
+      line-height:1.55;
+      font-size:15px;
+      border:1px solid var(--line);
+      background:#fcfaf6;
+      box-shadow:var(--shadow-soft);
+    }
+    .feedback.show{ display:block; animation:fadeIn .18s ease; }
+    .feedback.good{ background:var(--good-bg); border-color:rgba(31,157,85,.28); }
+    .feedback.bad{ background:var(--bad-bg); border-color:rgba(192,57,43,.22); }
+    .feedback strong{ font-weight:800; }
+
+    .bottom-bar{
+      position:sticky;
+      bottom:max(8px, env(safe-area-inset-bottom));
+      z-index:10;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:start;
+      margin-top:16px;
+      padding-top:8px;
+      background:linear-gradient(180deg, rgba(246,241,232,0), rgba(246,241,232,.92) 20%, rgba(246,241,232,1) 100%);
+    }
+    .result-mini{
+      min-height:48px;
+      display:block;
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(255,253,249,0.92);
+      border:1px solid rgba(221,210,194,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:13px;
+      font-weight:600;
+      line-height:1.4;
+      color:var(--muted);
+      white-space:normal;
+      overflow-wrap:anywhere;
+    }
+    .result-mini.show{
+      animation:resultFade .22s ease;
+    }
+    .result-mini.good{
+      color:#145d35;
+      background:var(--good-bg);
+      border-color:rgba(31,157,85,.28);
+    }
+    .result-mini.bad{
+      color:#7a2117;
+      background:var(--bad-bg);
+      border-color:rgba(192,57,43,.22);
+    }
+    .result-mini strong{
+      font-weight:800;
+    }
+    .result-mini br + strong{
+      display:inline-block;
+      margin-top:4px;
+    }
+    .primary{
+      appearance:none;
+      border:none;
+      border-radius:18px;
+      padding:14px 16px;
+      font-size:16px;
+      font-weight:800;
+      touch-action:manipulation;
+      box-shadow:var(--shadow);
+      background:linear-gradient(180deg,#2b2823 0%, #171613 100%);
+      color:white;
+    }
+    .next-only{
+      white-space:nowrap;
+    }
+
+    @keyframes fadeIn{
+      from{ opacity:0; transform:translateY(4px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+    @keyframes resultFade{
+      from{ opacity:0; transform:translateY(6px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    @media (min-width: 721px){
+      .bottom-bar{ position:static; background:none; padding-top:0; }
+      .answers.four{ grid-template-columns:1fr 1fr; }
+      .answers.six{ grid-template-columns:repeat(3, minmax(0, 1fr)) !important; }
+    }
+    @media (max-width: 440px){
+      .score-pill{ min-width:56px; padding:7px 8px; }
+      .score-pill .v{ font-size:14px; }
+      .play-btn{ width:42px; height:42px; border-radius:14px; }
+      .diff-btn{ font-size:14px; padding:10px 6px; }
+      .answers.six{ grid-template-columns:repeat(3, minmax(0, 1fr)) !important; }
+      .answer-btn{ font-size:15px; }
+      .bottom-bar{
+        grid-template-columns:1fr;
+      }
+      .next-only{
+        width:100%;
+      }
+    }
+  
+    .about{
+      font-size:12px;
+      color:#8a8175;
+      margin-top:2px;
+      margin-bottom:6px;
+    }
+
+    .app-footer{
+      line-height:1.6;
+      width:100%;
+      text-align:center;
+      font-size:12px;
+      color:#8a8175;
+      padding:14px 10px calc(14px + env(safe-area-inset-bottom));
+      margin-top:16px;
+    }
+    .app-footer a{
+      color:inherit;
+      text-decoration:none;
+      opacity:.9;
+    }
+
+    @media (max-width: 720px){
+      .answers.four{
+        grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+      }
+      .answers.six{
+        grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
+</style>
+
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <div class="title-wrap">
+        <div class="logo">♫</div>
+        <h1>Chords quiz</h1>
+      </div>
+      <div class="score-mini">
+        <div class="score-pill score-wide"><div class="v"><span id="correctCount">0</span>/<span id="totalCount">0</span></div><div class="k">Correct</div></div>
+      </div>
+    </div>
+
+    <div class="card quiz">
+      <div class="topbar">
+        <div class="difficulty">
+          <button class="diff-btn active" data-level="easy">Dễ</button>
+          <button class="diff-btn" data-level="medium">Trung bình</button>
+          <button class="diff-btn" data-level="hard">Khó</button>
+        </div>
+        <button class="play-btn" id="playBtn" aria-label="Nghe hợp âm">▶</button>
+      </div>
+
+      <div class="keyboard-shell">
+        <svg id="keyboardSvg" viewBox="0 0 1180 380" preserveAspectRatio="xMidYMid meet" aria-label="Bàn phím piano 2 quãng tám"></svg>
+      </div>
+
+      <div class="answers four" id="answers"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="bottom-bar">
+        <div class="result-mini" id="resultMini"></div>
+        <button class="primary next-only" id="nextBtn">Câu tiếp theo</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  const LEVELS = {
+    easy: {
+      roots: [0,2,4,5,7,9,11],
+      types: [
+        { key:'maj', symbol:'', intervals:[0,4,7], explain:'Hợp âm trưởng gồm 1 – 3 trưởng – 5 đúng.' },
+        { key:'min', symbol:'m', intervals:[0,3,7], explain:'Hợp âm thứ gồm 1 – 3 thứ – 5 đúng.' }
+      ],
+      optionCount: 4,
+      dotCountRange: [3,4],
+      inversion: false,
+    },
+    medium: {
+      roots: Array.from({length:12}, (_,i)=>i),
+      types: [
+        { key:'maj', symbol:'', intervals:[0,4,7], explain:'Hợp âm trưởng gồm 1 – 3 trưởng – 5 đúng.' },
+        { key:'min', symbol:'m', intervals:[0,3,7], explain:'Hợp âm thứ gồm 1 – 3 thứ – 5 đúng.' },
+        { key:'7', symbol:'7', intervals:[0,4,7,10], explain:'Hợp âm 7 gồm hợp âm trưởng cộng thêm 7 thứ.' },
+        { key:'M7', symbol:'M7', intervals:[0,4,7,11], explain:'Hợp âm M7 gồm hợp âm trưởng cộng thêm 7 trưởng.' }
+      ],
+      optionCount: 4,
+      dotCountRange: [3,4],
+      inversion: true,
+    },
+    hard: {
+      roots: Array.from({length:12}, (_,i)=>i),
+      types: [
+        { key:'maj', symbol:'', intervals:[0,4,7], explain:'Hợp âm trưởng gồm 1 – 3 trưởng – 5 đúng.' },
+        { key:'min', symbol:'m', intervals:[0,3,7], explain:'Hợp âm thứ gồm 1 – 3 thứ – 5 đúng.' },
+        { key:'7', symbol:'7', intervals:[0,4,7,10], explain:'Hợp âm 7 gồm hợp âm trưởng cộng thêm 7 thứ.' },
+        { key:'M7', symbol:'M7', intervals:[0,4,7,11], explain:'Hợp âm M7 gồm hợp âm trưởng cộng thêm 7 trưởng.' },
+        { key:'9', symbol:'9', intervals:[0,4,7,10,14], explain:'Hợp âm 9 gồm hợp âm 7 cộng thêm bậc 9.' },
+        { key:'aug', symbol:'aug', intervals:[0,4,8], explain:'Hợp âm augmented có quãng 5 tăng.' },
+        { key:'sus2', symbol:'sus2', intervals:[0,2,7], explain:'Hợp âm sus2 thay bậc 3 bằng bậc 2.' },
+        { key:'sus4', symbol:'sus4', intervals:[0,5,7], explain:'Hợp âm sus4 thay bậc 3 bằng bậc 4.' },
+        { key:'dim', symbol:'dim', intervals:[0,3,6], explain:'Hợp âm diminished có quãng 3 thứ và quãng 5 giảm.' }
+      ],
+      optionCount: 6,
+      dotCountRange: [4,6],
+      inversion: true,
+    }
+  };
+
+  const svg = document.getElementById('keyboardSvg');
+  const answersEl = document.getElementById('answers');
+  const feedbackEl = document.getElementById('feedback');
+  const nextBtn = document.getElementById('nextBtn');
+  const resultMiniEl = document.getElementById('resultMini');
+  const totalCountEl = document.getElementById('totalCount');
+  const playBtn = document.getElementById('playBtn');
+  const correctCountEl = document.getElementById('correctCount');
+  const diffBtns = Array.from(document.querySelectorAll('.diff-btn'));
+
+  const whiteNotes = [
+    {pc:0, name:'C'}, {pc:2, name:'D'}, {pc:4, name:'E'}, {pc:5, name:'F'},
+    {pc:7, name:'G'}, {pc:9, name:'A'}, {pc:11, name:'B'},
+    {pc:0, name:'C'}, {pc:2, name:'D'}, {pc:4, name:'E'}, {pc:5, name:'F'},
+    {pc:7, name:'G'}, {pc:9, name:'A'}, {pc:11, name:'B'},
+    {pc:0, name:'C'}
+  ];
+
+  const START_MIDI = 60;
+  const END_MIDI = 84;
+  const WHITE_KEY_W = 75;
+  const WHITE_KEY_H = 270;
+  const BLACK_KEY_W = 46;
+  const BLACK_KEY_H = 165;
+  const PADDING = 26;
+  const TOP = 65;
+  const width = PADDING * 2 + WHITE_KEY_W * 15;
+  const height = 360;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  let whitePositions = [];
+  let keyMap = {};
+  let stats = { q:0, correct:0 };
+  let locked = false;
+  let currentLevel = 'easy';
+  let currentQuestion = null;
+
+  let audioContext = null;
+  let audioUnlocked = false;
+  let hasAutoplayedOnce = false;
+
+  function pcName(pc){ return NOTE_NAMES[pc]; }
+  function midiToPc(midi){ return ((midi % 12) + 12) % 12; }
+  function chordName(rootPc, type){ return pcName(rootPc) + type.symbol; }
+  function midiToFreq(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  function ensureAudioContext(){
+    if(!audioContext){
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioContext.state === 'suspended'){
+      audioContext.resume();
+    }
+    audioUnlocked = true;
+  }
+
+  ['touchstart','click','keydown'].forEach(evt => {
+    window.addEventListener(evt, () => {
+      if(!audioUnlocked){
+        try{ ensureAudioContext(); } catch(e){}
+      }
+    }, { once:true });
+  });
+
+  function playChord(midis){
+    try{
+      ensureAudioContext();
+      const now = audioContext.currentTime;
+
+      const master = audioContext.createGain();
+      master.gain.setValueAtTime(0.18, now);
+      master.connect(audioContext.destination);
+
+      const convolver = audioContext.createConvolver();
+      convolver.buffer = createReverbBuffer(audioContext, 1.6, 2.2);
+
+      const dryGain = audioContext.createGain();
+      dryGain.gain.value = 0.9;
+
+      const wetGain = audioContext.createGain();
+      wetGain.gain.value = 0.16;
+
+      dryGain.connect(master);
+      convolver.connect(wetGain);
+      wetGain.connect(master);
+
+      const uniqueMidis = [...new Set(midis)].sort((a,b)=>a-b);
+
+      uniqueMidis.forEach((midi, i) => {
+        const osc1 = audioContext.createOscillator();
+        const osc2 = audioContext.createOscillator();
+        const voiceGain = audioContext.createGain();
+        const filter = audioContext.createBiquadFilter();
+
+        const start = now + i * 0.055;
+        const end = start + 1.25;
+
+        osc1.type = 'triangle';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(midiToFreq(midi), start);
+        osc2.frequency.setValueAtTime(midiToFreq(midi) * 2, start);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2600, start);
+
+        voiceGain.gain.setValueAtTime(0.0001, start);
+        voiceGain.gain.exponentialRampToValueAtTime(0.18, start + 0.03);
+        voiceGain.gain.exponentialRampToValueAtTime(0.07, start + 0.45);
+        voiceGain.gain.exponentialRampToValueAtTime(0.0001, end);
+
+        osc1.connect(voiceGain);
+        osc2.connect(voiceGain);
+        voiceGain.connect(filter);
+
+        filter.connect(dryGain);
+        filter.connect(convolver);
+
+        osc1.start(start);
+        osc2.start(start);
+        osc1.stop(end + 0.02);
+        osc2.stop(end + 0.02);
+      });
+    }catch(e){
+      console.log('Audio playback blocked or unavailable.', e);
+    }
+  }
+
+  function createReverbBuffer(ctx, duration, decay){
+    const rate = ctx.sampleRate;
+    const length = Math.floor(rate * duration);
+    const buffer = ctx.createBuffer(2, length, rate);
+
+    for(let ch = 0; ch < 2; ch++){
+      const data = buffer.getChannelData(ch);
+      for(let i = 0; i < length; i++){
+        const t = i / length;
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, decay);
+      }
+    }
+    return buffer;
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+  function sample(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function updateStats(){
+    correctCountEl.textContent = String(stats.correct);
+    totalCountEl.textContent = String(stats.q);
+  }
+
+  function rect(attrs){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    return el;
+  }
+  function text(attrs, content){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    el.textContent = content;
+    return el;
+  }
+  function circle(attrs){
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    return el;
+  }
+  function clearSvg(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    whitePositions = [];
+    keyMap = {};
+  }
+
+  function drawKeyboard(noteMidis = []){
+    clearSvg();
+    svg.appendChild(rect({x:0,y:0,width,height,rx:22,fill:'#efefef'}));
+
+    let x = PADDING;
+    let currentMidi = START_MIDI;
+
+    for(let i=0;i<whiteNotes.length;i++){
+      const w = whiteNotes[i];
+      svg.appendChild(rect({
+        x, y:TOP, width:WHITE_KEY_W, height:WHITE_KEY_H,
+        fill:'#fff', stroke:'#111', 'stroke-width':2.4
+      }));
+      svg.appendChild(text({
+        x:x + WHITE_KEY_W/2,
+        y:TOP + WHITE_KEY_H - 18,
+        'text-anchor':'middle',
+        'font-size':'24',
+        'font-family':'Arial, sans-serif',
+        fill:'#111'
+      }, w.name));
+
+      whitePositions.push({ x, midi:currentMidi, pc:midiToPc(currentMidi) });
+      keyMap[currentMidi] = { x, y:TOP, w:WHITE_KEY_W, h:WHITE_KEY_H, isBlack:false, pc:midiToPc(currentMidi) };
+
+      if(i < whiteNotes.length - 1){
+        const nextPc = whiteNotes[i+1].pc;
+        const currPc = whiteNotes[i].pc;
+        const diff = (nextPc - currPc + 12) % 12 || 12;
+        currentMidi += diff;
+      }
+      x += WHITE_KEY_W;
+    }
+
+    for(let i=0;i<whitePositions.length-1;i++){
+      const curr = whitePositions[i];
+      const next = whitePositions[i+1];
+      const diff = next.midi - curr.midi;
+      if(diff === 2){
+        const blackMidi = curr.midi + 1;
+        const bx = curr.x + WHITE_KEY_W - BLACK_KEY_W/2;
+        svg.appendChild(rect({
+          x:bx, y:TOP, width:BLACK_KEY_W, height:BLACK_KEY_H,
+          rx:6, fill:'#111', stroke:'#000', 'stroke-width':2
+        }));
+        keyMap[blackMidi] = { x:bx, y:TOP, w:BLACK_KEY_W, h:BLACK_KEY_H, isBlack:true, pc:midiToPc(blackMidi) };
+      }
+    }
+
+    noteMidis.forEach(midi => {
+      const key = keyMap[midi];
+      if(!key) return;
+      const cx = key.x + key.w/2;
+      const cy = key.isBlack ? (key.y + key.h - 26) : (key.y + key.h - 72);
+      svg.appendChild(circle({
+        cx, cy, r:16,
+        fill:'#e53935', stroke:'#b71c1c', 'stroke-width':3
+      }));
+    });
+  }
+
+  function allMidiForPc(pc){
+    const out = [];
+    for(let m=START_MIDI; m<=END_MIDI; m++){
+      if(midiToPc(m) === pc) out.push(m);
+    }
+    return out;
+  }
+
+  function duplicateToCount(baseMidis, targetCount){
+    let result = baseMidis.slice();
+    const sorted = baseMidis.slice().sort((a,b)=>a-b);
+    while(result.length < targetCount){
+      const src = sample(sorted);
+      let candidates = [src - 12, src + 12].filter(m => m >= START_MIDI && m <= END_MIDI);
+      if(!candidates.length) candidates = [src];
+      result.push(sample(candidates));
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  function chooseVoicing(rootPc, type, level){
+    const pcs = [...new Set(type.intervals.map(i => (rootPc + i) % 12))];
+    const [minDots, maxDots] = level.dotCountRange;
+    const targetDots = Math.floor(Math.random() * (maxDots - minDots + 1)) + minDots;
+
+    if(!level.inversion){
+      const rootChoices = allMidiForPc(rootPc).filter(m => m <= 72);
+      const rootMidi = rootChoices.length ? rootChoices[0] : allMidiForPc(rootPc)[0];
+      let base = type.intervals.map(i => rootMidi + i);
+      base = base.map(m => {
+        while(m > END_MIDI) m -= 12;
+        while(m < START_MIDI) m += 12;
+        return m;
+      }).sort((a,b)=>a-b);
+      for(let i=1;i<base.length;i++){
+        while(base[i] <= base[i-1] && base[i] + 12 <= END_MIDI) base[i] += 12;
+      }
+      return duplicateToCount(base.sort((a,b)=>a-b), targetDots);
+    }
+
+    const available = pcs.map(pc => allMidiForPc(pc));
+    for(let t=0;t<260;t++){
+      let chosen = available.map(cands => sample(cands));
+      chosen = [...new Set(chosen)];
+      if(chosen.length !== pcs.length) continue;
+      const sorted = chosen.slice().sort((a,b)=>a-b);
+      const span = sorted[sorted.length - 1] - sorted[0];
+      if(span < 3 || span > 22) continue;
+      return duplicateToCount(sorted, targetDots);
+    }
+
+    const fallback = pcs.map(pc => allMidiForPc(pc)[0]).sort((a,b)=>a-b);
+    return duplicateToCount(fallback, targetDots);
+  }
+
+  function samePitchClassSet(rootPc, type, targetPcs){
+    const a = [...new Set(type.intervals.map(i => (rootPc + i) % 12))].sort((x,y)=>x-y);
+    const b = [...new Set(targetPcs)].sort((x,y)=>x-y);
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  function makeQuestion(){
+    const level = LEVELS[currentLevel];
+    const rootPc = sample(level.roots);
+    const type = sample(level.types);
+    const pcs = type.intervals.map(i => (rootPc + i) % 12);
+    const midis = chooseVoicing(rootPc, type, level);
+
+    const pool = [];
+    for(const r of level.roots){
+      for(const t of level.types){
+        if(r === rootPc && t.key === type.key) continue;
+        if(samePitchClassSet(r, t, pcs)) continue;
+        pool.push({ rootPc:r, type:t, name:chordName(r, t), correct:false });
+      }
+    }
+
+    const options = shuffle([
+      { rootPc, type, name:chordName(rootPc, type), correct:true },
+      ...shuffle(pool).slice(0, level.optionCount - 1)
+    ]);
+
+    return { rootPc, type, pcs, midis, options };
+  }
+
+  function noteSetText(pcs){ return pcs.map(pcName).join(' – '); }
+
+  function explain(question, selected, isCorrect){
+    const rightName = chordName(question.rootPc, question.type);
+    const rightNotes = noteSetText(question.pcs);
+
+    if(isCorrect){
+      return `
+        <strong>Chính xác.</strong><br>
+        Đây là <strong>${rightName}</strong>.<br>
+        <strong>Tập nốt:</strong> ${rightNotes}<br>
+        ${question.type.explain}
+      `;
+    }
+
+    const chosenPcs = selected.type.intervals.map(i => (selected.rootPc + i) % 12);
+    return `
+      <strong>Sai.</strong> Đáp án đúng là <strong>${rightName}</strong>.<br>
+      <strong>Tập nốt đúng:</strong> ${rightNotes}<br><br>
+      <strong>Bạn chọn:</strong> ${selected.name} → ${noteSetText(chosenPcs)}<br>
+      <strong>Giải thích:</strong> ${question.type.explain}<br>
+      Các chấm đỏ trên hình tạo thành đúng tập nốt của <strong>${rightName}</strong>.
+    `;
+  }
+
+  function renderAnswers(question){
+    answersEl.innerHTML = '';
+    answersEl.className = 'answers ' + (question.options.length === 6 ? 'six' : 'four');
+    question.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.innerHTML = `${String.fromCharCode(65+idx)}. ${opt.name}`;
+      btn.addEventListener('click', () => handleAnswer(opt, question));
+      answersEl.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(selectedOpt, question){
+    if(locked) return;
+    locked = true;
+    stats.q += 1;
+    if(selectedOpt.correct) stats.correct += 1;
+    updateStats();
+
+    const buttons = Array.from(document.querySelectorAll('.answer-btn'));
+    buttons.forEach((btn, i) => {
+      const opt = question.options[i];
+      btn.disabled = true;
+      if(opt.correct) btn.classList.add('correct');
+      if(opt === selectedOpt && !opt.correct) btn.classList.add('wrong');
+    });
+
+    const ok = selectedOpt.correct;
+    feedbackEl.className = 'feedback';
+    feedbackEl.innerHTML = '';
+    resultMiniEl.className = 'result-mini show ' + (ok ? 'good' : 'bad');
+    resultMiniEl.innerHTML = explain(question, selectedOpt, ok);
+  }
+
+  function refreshModeUI(){
+    diffBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.level === currentLevel));
+  }
+
+  function scheduleAutoplay(){
+    if(!currentQuestion) return;
+    setTimeout(() => {
+      if(audioUnlocked){
+        playChord(currentQuestion.midis);
+      }
+      hasAutoplayedOnce = true;
+    }, 120);
+  }
+
+  function nextQuestion(){
+    locked = false;
+    feedbackEl.className = 'feedback';
+    feedbackEl.innerHTML = '';
+    resultMiniEl.className = 'result-mini';
+    resultMiniEl.innerHTML = '';
+    currentQuestion = makeQuestion();
+    drawKeyboard(currentQuestion.midis);
+    renderAnswers(currentQuestion);
+    scheduleAutoplay();
+  }
+
+  function resetGame(){
+    stats = { q:0, correct:0 };
+    updateStats();
+    nextQuestion();
+  }
+
+  diffBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentLevel = btn.dataset.level;
+      refreshModeUI();
+      resetGame();
+    });
+  });
+
+  nextBtn.addEventListener('click', nextQuestion);
+  playBtn.addEventListener('click', () => {
+    if(currentQuestion) playChord(currentQuestion.midis);
+  });
+
+  updateStats();
+  refreshModeUI();
+  nextQuestion();
+})();
+</script>
+
+  <footer class="app-footer">
+    Dành cho các bạn đang chật vật đọc hợp âm :)<br><strong>Anh Quân - 0906015392</strong>
+  </footer>
+
+</body>
+</html>
